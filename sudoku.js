@@ -29,34 +29,34 @@ function populateSquares ( i ) {
 
 populateSquares(0);
 
-/*squares.map(narrowPossibilities);
+squares.map(narrowPossibilities);
 
-function narrowPossibilities (elem) {
-	if (!elem.known) {
+function narrowPossibilities (square) {
+	if (!square.known) {
 	
-		var rowLimit = checkRow(elem.row, function (result) {
-			return result;
-		});
-		var columnLimit = checkColumn(elem.row, function (result) {
-			return result;
-		});
-		var boxLimit = checkBox(elem.row, function (result) {
-			return result;
+		checkRow(square.row, function (rowLimit) {
+			checkColumn(square.column, function (columnLimit) {
+				checkBox(square.box, function (boxLimit) {
+					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
+					console.log('unknown ');
+					console.log(square);
+					return square;
+				});
+			});
 		});
 		
-		elem.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
-		if (square.possible.length === 1) {
-			square.known = true;
-		}
+	} else {
+		console.log('known ');
+		console.log(square);
+		return square;
 	}
-	
-	return elem;
-}*/
+		
+}
 
-console.log(squares);
+//console.log(squares);
 
 function checkRow (index, callback) {
-	callback([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+	callback([1, 2, 3]);
 }
 function checkColumn (index, callback) {
 	callback([1, 2, 3, 4, 5, 6, 7, 8, 9]);
