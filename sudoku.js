@@ -39,6 +39,8 @@ function narrowPossibilities (square) {
 				checkBox(square.box, function (boxLimit) {
 					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
 					console.log('rowLimit for row ' + square.row + ' is ' + rowLimit);
+					console.log('columnLimit for column ' + square.column + ' is ' + columnLimit);
+					console.log('boxLimit for box ' + square.box + ' is ' + boxLimit);
 					console.log('square.possible is ' + square.possible);
 					return square;
 				});
@@ -66,8 +68,26 @@ function checkRow (index, callback) {
 	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], row));
 }
 function checkColumn (index, callback) {
-	callback([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+	var column = squares.reduce ( function (prev, current) {
+		if (current.column === index && current.known) {
+			return prev.concat(current.possible);
+		} else {
+			return prev;
+		}
+	}, []);
+	
+	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], column));
 }
 function checkBox (index, callback) {
-	callback([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+	var box = squares.reduce ( function (prev, current) {
+		if (current.box === index && current.known) {
+			return prev.concat(current.possible);
+		} else {
+			return prev;
+		}
+	}, []);
+	
+	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], box));
 }
