@@ -38,16 +38,12 @@ function narrowPossibilities (square) {
 			checkColumn(square.column, function (columnLimit) {
 				checkBox(square.box, function (boxLimit) {
 					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
-					console.log('unknown ');
-					console.log(square);
 					return square;
 				});
 			});
 		});
 		
 	} else {
-		console.log('known ');
-		console.log(square);
 		return square;
 	}
 		
@@ -56,6 +52,17 @@ function narrowPossibilities (square) {
 //console.log(squares);
 
 function checkRow (index, callback) {
+
+	var row = squares.reduce ( function (prev, current) {
+		if (current.row === index && current.known) {
+			return prev.concat(current.possible);
+		} else {
+			return prev;
+		}
+	}, []);
+	
+	console.log('the known values in row ' + index + ' are ' + row);
+	
 	callback([1, 2, 3]);
 }
 function checkColumn (index, callback) {
