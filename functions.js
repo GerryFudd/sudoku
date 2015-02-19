@@ -20,3 +20,15 @@ module.exports.difference = function (listA, listB) {
 	
 	return result;
 };
+
+module.exports.union = function (listA, listB) {
+	var result = [];
+	var result = result.concat(listB);
+	listA.forEach( function (elem) {
+		if (result.indexOf(elem) === -1) {
+			result.push(elem);
+		}
+	});
+	
+	return result;
+};
