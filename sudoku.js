@@ -35,15 +35,18 @@ function populateSquares ( i ) {
 populateSquares(0);
 
 function solve () {
+
 	var prevCheck = check;
 	squares.map(narrowPossibilities);
+	squares.map(doubleCheck);
+	
 	if (check !== prevCheck) {
 		console.log(check);
 		solve();
 	} else if (check === 81) {
 		ib(squares);
 	} else {
-		console.log(squares);
+		console.log('not done');
 	}
 }
 
@@ -71,7 +74,7 @@ function checker (depList, callback) {
 	var limits = [];
 	depList.forEach( function (elem, index) {
 		limits[index] = squares.reduce ( function (prev, current) {
-			if (current[dependencies[index]] === depList[index] && current.known) {
+			if (current[dependencies[index]] === elem && current.known) {
 				return prev.concat(current.possible);
 			} else {
 				return prev;
@@ -81,4 +84,36 @@ function checker (depList, callback) {
 	});
 	
 	callback(fn.intersect(limits[0], fn.intersect(limits[1], limits[2])));
+}
+
+function doubleCheck (square) {
+	if (!square.known) {
+		doubleChecker(square, function (limit) {
+			square.possible = limit;
+			if (square.possible.length === 1) {
+				square.known = true;
+				check++;
+			}
+			return square;
+		});
+	} else {
+		return square;
+	}
+}
+
+function doubleChecker (square, callback) {
+	var dependencies = ['row', 'column', 'box'];
+	var near = {};
+	dependencies.forEach( function (elem, index) {
+		near[elem] = squares.reduce ( function (prev, current) {
+			if (current[elem] === square[elem] && current.possible !== square.possible && !current.known) {
+				prev.push(current.possible);
+				return prev;
+			} else {
+				return prev;
+			}
+		}, []);
+	});
+	console.log(near);
+	callback(square.possible);
 }
