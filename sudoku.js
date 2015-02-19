@@ -1,5 +1,6 @@
 var input = '158 2  6 2   8  9  3  7 8 2 6 74      4 6 7      19 5 4 9 3  2  2  5   8 7  9 413';
 var fn = require('./functions.js');
+var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
 
@@ -26,6 +27,8 @@ function populateSquares ( i ) {
 	squares.push(square);
 	if (i < input.length - 1) {
 		populateSquares (i + 1);
+	} else {
+		ib(squares);
 	}
 }
 
@@ -35,7 +38,6 @@ function solve () {
 	var prevCheck = check;
 	squares.map(narrowPossibilities);
 	if (check !== prevCheck) {
-		console.log(check);
 		solve();
 	}
 }
