@@ -1,14 +1,18 @@
-var input = '158 2  6 2   8  9  3  7 8 2 6 74      4 6 7      19 5 4 9 3  2  2  5   8 7  9 413';
+var input = '.94...13..............76..2.8..1.....32.........2...6.....5.4.......8..7..63.4..8';
 var fn = require('./functions.js');
+var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
+
+console.log('=======================================================================');
+
 
 function populateSquares ( i ) {
 
 	var square = {};
 
 	// determine whether the square is known
-	if (input[i] === ' ') {
+	if (input[i] === ' ' || input[i] === '.') {
 		square.known = false;
 		square.possible = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 	} else {
@@ -26,17 +30,28 @@ function populateSquares ( i ) {
 	squares.push(square);
 	if (i < input.length - 1) {
 		populateSquares (i + 1);
+	} else {
+		ib(squares);
 	}
 }
 
 populateSquares(0);
 
 function solve () {
+
 	var prevCheck = check;
 	squares.map(narrowPossibilities);
+	squares.map(doubleCheck);
+	
 	if (check !== prevCheck) {
 		console.log(check);
+		ib(squares);
 		solve();
+	} else if (check === 81) {
+		ib(squares);
+	} else {
+		console.log(check);
+		ib(squares);
 	}
 }
 
@@ -45,17 +60,13 @@ solve();
 function narrowPossibilities (square) {
 	if (!square.known) {
 	
-		checkRow(square.row, function (rowLimit) {
-			checkColumn(square.column, function (columnLimit) {
-				checkBox(square.box, function (boxLimit) {
-					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
-					if (square.possible.length === 1) {
-						square.known = true;
-						check++;
-					}
-					return square;
-				});
-			});
+		checker([square.row, square.column, square.box], function (limit) {
+			square.possible = limit;
+			if (square.possible.length === 1) {
+				square.known = true;
+				check++;
+			}
+			return square;
 		});
 		
 	} else {
@@ -63,39 +74,82 @@ function narrowPossibilities (square) {
 	}
 }
 
-function checkRow (index, callback) {
-
-	var row = squares.reduce ( function (prev, current) {
-		if (current.row === index && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
+function checker (depList, callback) {
+	var dependencies = ['row', 'column', 'box'];
+	var limits = [];
+	depList.forEach( function (elem, index) {
+		limits[index] = squares.reduce ( function (prev, current) {
+			if (current[dependencies[index]] === elem && current.known) {
+				return prev.concat(current.possible);
+			} else {
+				return prev;
+			}
+		}, []);
+		limits[index] = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], limits[index]);
+	});
 	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], row));
+	callback(fn.intersect(limits[0], fn.intersect(limits[1], limits[2])));
 }
-function checkColumn (index, callback) {
 
-	var column = squares.reduce ( function (prev, current) {
-		if (current.column === index && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
-	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], column));
+function doubleCheck (square) {
+	if (!square.known) {
+		doubleChecker(square, function (limit) {
+			square.possible = limit;
+			if (square.possible.length === 1) {
+				square.known = true;
+				check++;
+			}
+			return square;
+		});
+	} else {
+		return square;
+	}
 }
-function checkBox (index, callback) {
 
-	var box = squares.reduce ( function (prev, current) {
-		if (current.box === index && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
+function doubleChecker (square, callback) {
+	var dependencies = ['row', 'column', 'box'];
+	var near = {};
+	dependencies.forEach( function (elem, index) {
+		near[elem] = squares.reduce ( function (prev, current) {
+			if (current.row !== square.row || current.column !== square.column) {
+				if (current[elem] === square[elem]) {
+					prev.push(current.possible);
+					return prev;
+				} else {
+					return prev;
+				}
+			} else {
+				return prev;
+			}
+		}, []);
+	});
 	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], box));
+	function crossHatch ( index ) {
+		var result = square.possible;
+		square.possible.forEach( function (elem, i) {
+			if (result === square.possible) {
+				var unique = true;
+				near[dependencies[index]].forEach( function (depElem) {
+					if (depElem.indexOf(elem) !== -1) {
+						unique = false;
+					}
+				});
+				if (unique) {
+					result = [elem];
+				}
+			}
+		});
+		if (result.length === 1) {
+			square.possible = result;
+			callback(square.possible);
+		} else if (index < dependencies.length - 1) {
+			crossHatch( index + 1 );
+		} else {
+			callback(square.possible);
+		}
+	}
+	
+	crossHatch( 0 );
+	
+	
 }
