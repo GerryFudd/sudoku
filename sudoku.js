@@ -1,6 +1,7 @@
 var input = '158 2  6 2   8  9  3  7 8 2 6 74      4 6 7      19 5 4 9 3  2  2  5   8 7  9 413';
 var fn = require('./functions.js');
 var squares = [];
+var check = 0;
 
 function populateSquares ( i ) {
 
@@ -13,6 +14,7 @@ function populateSquares ( i ) {
 	} else {
 		square.known = true;
 		square.possible = [Number(input[i])];
+		check++;
 	}
 	
 	// determine what row, column, and box the square belongs to
@@ -29,7 +31,16 @@ function populateSquares ( i ) {
 
 populateSquares(0);
 
-squares.map(narrowPossibilities);
+function solve () {
+	var prevCheck = check;
+	squares.map(narrowPossibilities);
+	if (check !== prevCheck) {
+		console.log(check);
+		solve();
+	}
+}
+
+solve();
 
 function narrowPossibilities (square) {
 	if (!square.known) {
@@ -38,10 +49,10 @@ function narrowPossibilities (square) {
 			checkColumn(square.column, function (columnLimit) {
 				checkBox(square.box, function (boxLimit) {
 					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
-					console.log('rowLimit for row ' + square.row + ' is ' + rowLimit);
-					console.log('columnLimit for column ' + square.column + ' is ' + columnLimit);
-					console.log('boxLimit for box ' + square.box + ' is ' + boxLimit);
-					console.log('square.possible is ' + square.possible);
+					if (square.possible.length === 1) {
+						square.known = true;
+						check++;
+					}
 					return square;
 				});
 			});
@@ -50,10 +61,7 @@ function narrowPossibilities (square) {
 	} else {
 		return square;
 	}
-		
 }
-
-//console.log(squares);
 
 function checkRow (index, callback) {
 
