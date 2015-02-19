@@ -52,17 +52,13 @@ solve();
 function narrowPossibilities (square) {
 	if (!square.known) {
 	
-		checkRow(square.row, function (rowLimit) {
-			checkColumn(square.column, function (columnLimit) {
-				checkBox(square.box, function (boxLimit) {
-					square.possible = fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit));
-					if (square.possible.length === 1) {
-						square.known = true;
-						check++;
-					}
-					return square;
-				});
-			});
+		checker(square.row, square.column, square.box, function (limit) {
+			square.possible = limit;
+			if (square.possible.length === 1) {
+				square.known = true;
+				check++;
+			}
+			return square;
 		});
 		
 	} else {
@@ -70,39 +66,34 @@ function narrowPossibilities (square) {
 	}
 }
 
-function checkRow (index, callback) {
+function checker (rowNum, columnNum, boxNum, callback) {
 
 	var row = squares.reduce ( function (prev, current) {
-		if (current.row === index && current.known) {
+		if (current.row === rowNum && current.known) {
 			return prev.concat(current.possible);
 		} else {
 			return prev;
 		}
 	}, []);
-	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], row));
-}
-function checkColumn (index, callback) {
+	var rowLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], row);
 
 	var column = squares.reduce ( function (prev, current) {
-		if (current.column === index && current.known) {
+		if (current.column === columnNum && current.known) {
 			return prev.concat(current.possible);
 		} else {
 			return prev;
 		}
 	}, []);
-	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], column));
-}
-function checkBox (index, callback) {
+	var columnLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], column);
 
 	var box = squares.reduce ( function (prev, current) {
-		if (current.box === index && current.known) {
+		if (current.box === boxNum && current.known) {
 			return prev.concat(current.possible);
 		} else {
 			return prev;
 		}
 	}, []);
+	var boxLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], box);
 	
-	callback(fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], box));
+	callback(fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit)));
 }
