@@ -33,7 +33,7 @@ function populateSquares ( i ) {
 	} else {
 		ib(squares);
 	}
-  console.log(squares);
+  //console.log(squares);
 }
 
 populateSquares(0);
@@ -49,16 +49,26 @@ function solve () {
 	
 	if (check !== prevCheck) {
 		ib(squares);
-		console.log(check);
+		//console.log(check);
 		solve();
 	} else if (check === 81) {
 		ib(squares);
 	} else {
 		ib(squares);
-		console.log(check);
+		//console.log(check);
+
 		guesser(squares);
 	}
 }
+var clone_of_squares = JSON.parse( JSON.stringify( squares ) );
+console.log('*******************\n'); 
+console.log(clone_of_squares); 
+console.log('*******************\n'); 
+console.log(clone_of_squares[80]);
+clone_of_squares[80].known = false;
+console.log(clone_of_squares[80]);
+console.log(squares[80]);
+
 
 solve();
 
