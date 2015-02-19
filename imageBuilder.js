@@ -1,12 +1,19 @@
 function imageBuilder (array) {
 	var i;
 	var image = '+---------+---------+---------+';
-	var border = '\n+---------+---------+---------+';
 	for (i = 0; i < 3; i++) {
-		image = buildRow(array, image, i);
+		image = buildBoxes(array, image, i);
 	}
-	image += border;
 	console.log(image);
+}
+
+function buildBoxes (array, image, boxRow) {
+	var l;
+	for (l = boxRow * 3; l < (boxRow + 1) * 3; l++) {
+		image = buildRow(array, image, l);
+	}
+	image += '\n+---------+---------+---------+';
+	return image;
 }
 
 function buildRow (array, image, rowNum) {

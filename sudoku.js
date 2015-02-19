@@ -39,6 +39,8 @@ function solve () {
 	squares.map(narrowPossibilities);
 	if (check !== prevCheck) {
 		solve();
+	} else {
+		ib(squares);
 	}
 }
 
