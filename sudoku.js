@@ -136,11 +136,6 @@ function doubleChecker (square, callback) {
 				});
 				if (unique) {
 					result = [elem];
-				} else {
-					console.log(square);
-					console.log('was compared with its ' + dependencies[index]);
-					console.log(near[dependencies[index]]);
-					console.log('I found that there is not enough info to assign');
 				}
 			}
 		});
