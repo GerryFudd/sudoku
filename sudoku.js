@@ -52,7 +52,7 @@ solve();
 function narrowPossibilities (square) {
 	if (!square.known) {
 	
-		checker(square.row, square.column, square.box, function (limit) {
+		checker([square.row, square.column, square.box], function (limit) {
 			square.possible = limit;
 			if (square.possible.length === 1) {
 				square.known = true;
@@ -66,34 +66,19 @@ function narrowPossibilities (square) {
 	}
 }
 
-function checker (rowNum, columnNum, boxNum, callback) {
-
-	var row = squares.reduce ( function (prev, current) {
-		if (current.row === rowNum && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
-	var rowLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], row);
-
-	var column = squares.reduce ( function (prev, current) {
-		if (current.column === columnNum && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
-	var columnLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], column);
-
-	var box = squares.reduce ( function (prev, current) {
-		if (current.box === boxNum && current.known) {
-			return prev.concat(current.possible);
-		} else {
-			return prev;
-		}
-	}, []);
-	var boxLimit = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], box);
+function checker (depList, callback) {
+	var dependencies = ['row', 'column', 'box'];
+	var limits = [];
+	depList.forEach( function (elem, index) {
+		limits[index] = squares.reduce ( function (prev, current) {
+			if (current[dependencies[index]] === depList[index] && current.known) {
+				return prev.concat(current.possible);
+			} else {
+				return prev;
+			}
+		}, []);
+		limits[index] = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], limits[index]);
+	});
 	
-	callback(fn.intersect(rowLimit, fn.intersect(columnLimit, boxLimit)));
+	callback(fn.intersect(limits[0], fn.intersect(limits[1], limits[2])));
 }
