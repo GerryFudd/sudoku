@@ -1,4 +1,4 @@
-var input = '158 2  6 2   8  9  3  7 8 2 6 74      4 6 7      19 5 4 9 3  2  2  5   8 7  9 413';
+var input = '.94...13..............76..2.8..1.....32.........2...6.....5.4.......8..7..63.4..8';
 var fn = require('./functions.js');
 var ib = require('./imageBuilder.js');
 var squares = [];
@@ -9,7 +9,7 @@ function populateSquares ( i ) {
 	var square = {};
 
 	// determine whether the square is known
-	if (input[i] === ' ') {
+	if (input[i] === ' ' || input[i] === '.') {
 		square.known = false;
 		square.possible = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 	} else {
@@ -38,9 +38,12 @@ function solve () {
 	var prevCheck = check;
 	squares.map(narrowPossibilities);
 	if (check !== prevCheck) {
+		console.log(check);
 		solve();
-	} else {
+	} else if (check === 81) {
 		ib(squares);
+	} else {
+		console.log(squares);
 	}
 }
 
