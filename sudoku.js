@@ -43,21 +43,27 @@ function solve () {
 	var prevCheck = check;
 	// call one function for each technique
 	squares.map(narrowPossibilities);
+	claimer(0);
 	squares.map(doubleCheck);
 	
 	if (check !== prevCheck) {
-		console.log(check);
 		ib(squares);
+		console.log(check);
 		solve();
 	} else if (check === 81) {
 		ib(squares);
 	} else {
-		console.log(check);
 		ib(squares);
+		console.log(check);
+		guesser(squares);
 	}
 }
 
 solve();
+
+function guesser (previousGuess) {
+	
+}
 
 // this function "pencils in" the possible values for each square.  It also sets a value
 // if there is only one possibility.
@@ -170,6 +176,60 @@ function doubleChecker (square, callback) {
 	}
 	
 	crossHatch( 0 );
+}
+
+function claimer (index) {
+	var box = [];
+	// Make an array containing the squares in the given box.
+	squares.forEach( function (elem) {
+		if (elem.box === index) {
+			box.push(elem);
+		}
+	});
 	
+	// determine the starting row and starting column
+	var boxRow = Math.floor(index / 3) * 3;
+	var boxColumn = (index % 3) * 3;
+
 	
+	findClaimed(boxRow, box, index, 'row');
+	findClaimed(boxColumn, box, index, 'column');
+	
+	if (index < 8) {
+		claimer(index + 1);
+	}
+}
+	
+// Make an array where each element is the list of possible values for a square
+// in one of the two rows other than i
+function findClaimed ( subIndex , box, boxIndex, dependency ) {
+	var union = box.reduce( function ( prev, current ) {
+		if (current[dependency] !== subIndex) {
+			return fn.union(prev, current.possible);
+		} else {
+			return prev;
+		}
+	}, []);
+	var claimed = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], union);
+	squares.forEach( function (square) {
+		if ( square.box !== boxIndex && square[dependency] === subIndex && !square.known) {
+			var oldPossible = [].concat(square.possible);
+			square.possible = fn.difference(square.possible, claimed);
+// 			if (square.possible.length !== oldPossible.length) {
+// 				console.log('square.possible was');
+// 				console.log(oldPossible);
+// 				console.log('square is');
+// 				console.log(square);
+// 			}
+			
+			if (square.possible.length === 1) {
+				square.known = true;
+				check++;
+			}
+		}
+	});
+	
+	if (subIndex < Math.floor(boxIndex / 3) * 3 + 2) {
+		findClaimed( subIndex + 1, box, boxIndex, dependency );
+	}
 }
