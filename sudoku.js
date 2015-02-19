@@ -33,6 +33,7 @@ function populateSquares ( i ) {
 	} else {
 		ib(squares);
 	}
+  console.log(squares);
 }
 
 populateSquares(0);
