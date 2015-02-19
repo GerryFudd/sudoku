@@ -4,6 +4,9 @@ var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
 
+console.log('=======================================================================');
+
+
 function populateSquares ( i ) {
 
 	var square = {};
@@ -42,11 +45,12 @@ function solve () {
 	
 	if (check !== prevCheck) {
 		console.log(check);
+		ib(squares);
 		solve();
 	} else if (check === 81) {
 		ib(squares);
 	} else {
-		console.log('not done');
+		console.log(check);
 		ib(squares);
 	}
 }
@@ -107,41 +111,50 @@ function doubleChecker (square, callback) {
 	var near = {};
 	dependencies.forEach( function (elem, index) {
 		near[elem] = squares.reduce ( function (prev, current) {
-			if (current[elem] === square[elem] && current.possible !== square.possible && !current.known) {
-				prev.push(current.possible);
-				return prev;
+			if (current.row !== square.row || current.column !== square.column) {
+				if (current[elem] === square[elem]) {
+					prev.push(current.possible);
+					return prev;
+				} else {
+					return prev;
+				}
 			} else {
 				return prev;
 			}
 		}, []);
 	});
 	
-	square.possible.forEach( function (elem, index) {
-		var unique = true;
-		near.row.forEach( function (rowElem, rowInd) {
-			if (rowElem.indexOf(elem) !== -1 && unique) {
-				unique = false;
-			} else if (rowInd === near.row.length - 1 && unique) {
-				square.possible = [elem];
+	function crossHatch ( index ) {
+		var result = square.possible;
+		square.possible.forEach( function (elem, i) {
+			if (result === square.possible) {
+				var unique = true;
+				near[dependencies[index]].forEach( function (depElem) {
+					if (depElem.indexOf(elem) !== -1) {
+						unique = false;
+					}
+				});
+				if (unique) {
+					result = [elem];
+				} else {
+					console.log(square);
+					console.log('was compared with its ' + dependencies[index]);
+					console.log(near[dependencies[index]]);
+					console.log('I found that there is not enough info to assign');
+				}
 			}
 		});
-		
-		near.column.forEach( function (rowElem, rowInd) {
-			if (rowElem.indexOf(elem) !== -1 && unique) {
-				unique = false;
-			} else if (rowInd === near.row.length - 1 && unique) {
-				square.possible = [elem];
-			}
-		});
-		
-		near.box.forEach( function (rowElem, rowInd) {
-			if (rowElem.indexOf(elem) !== -1 && unique) {
-				unique = false;
-			} else if (rowInd === near.row.length - 1 && unique) {
-				square.possible = [elem];
-			}
-		});
-	});
+		if (result.length === 1) {
+			square.possible = result;
+			callback(square.possible);
+		} else if (index < dependencies.length - 1) {
+			crossHatch( index + 1 );
+		} else {
+			callback(square.possible);
+		}
+	}
 	
-	callback(square.possible);
+	crossHatch( 0 );
+	
+	
 }
