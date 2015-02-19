@@ -47,6 +47,7 @@ function solve () {
 		ib(squares);
 	} else {
 		console.log('not done');
+		ib(squares);
 	}
 }
 
@@ -114,6 +115,33 @@ function doubleChecker (square, callback) {
 			}
 		}, []);
 	});
-	console.log(near);
+	
+	square.possible.forEach( function (elem, index) {
+		var unique = true;
+		near.row.forEach( function (rowElem, rowInd) {
+			if (rowElem.indexOf(elem) !== -1 && unique) {
+				unique = false;
+			} else if (rowInd === near.row.length - 1 && unique) {
+				square.possible = [elem];
+			}
+		});
+		
+		near.column.forEach( function (rowElem, rowInd) {
+			if (rowElem.indexOf(elem) !== -1 && unique) {
+				unique = false;
+			} else if (rowInd === near.row.length - 1 && unique) {
+				square.possible = [elem];
+			}
+		});
+		
+		near.box.forEach( function (rowElem, rowInd) {
+			if (rowElem.indexOf(elem) !== -1 && unique) {
+				unique = false;
+			} else if (rowInd === near.row.length - 1 && unique) {
+				square.possible = [elem];
+			}
+		});
+	});
+	
 	callback(square.possible);
 }
