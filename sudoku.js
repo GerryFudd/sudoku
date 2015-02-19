@@ -57,10 +57,10 @@ function solve () {
 		ib(squares);
 		//console.log(check);
 
-		guesser(squares);
+    var clone_of_squares = JSON.parse( JSON.stringify( squares ) );
+		guesser(clone_of_squares);
 	}
 }
-var clone_of_squares = JSON.parse( JSON.stringify( squares ) );
 console.log('*******************\n'); 
 console.log(clone_of_squares); 
 console.log('*******************\n'); 
