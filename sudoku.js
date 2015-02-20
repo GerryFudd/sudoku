@@ -3,6 +3,8 @@ var fn = require('./functions.js');
 var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
+var savedCheck = 0;
+var guesses = 0;
 
 console.log('=======================================================================');
 
@@ -47,13 +49,13 @@ function solve (currentBoard) {
 	claimer(0, currentBoard);
 	currentBoard.map(doubleCheck);
 	
-	if (check !== prevCheck) {
+	if (check !== prevCheck && check < 81) {
 		ib(currentBoard);
 		console.log(check);
 		solve(currentBoard);
-	} else if (check === 81) {
-		console.log(check);
+	} else if (check >= 81) {
 		ib(currentBoard);
+		console.log(check);
 	} else {
 		ib(currentBoard);
 		console.log(check);
@@ -73,7 +75,8 @@ function guesser (previousGuess) {
 			console.log('we hit');
 			console.log(elem);
 			elem.known = true;
-			elem.possible = [elem.possible[0]];
+			elem.possible = [elem.possible[guesses]];
+			guesses++;
 			check++;
 			first = false;
 		}
@@ -82,13 +85,16 @@ function guesser (previousGuess) {
 }
 
 function findErrors (boardState, callback) {
+	console.log(boardState);
 	if (boardState.some( function (elem) {
-		return elem.possible === [];
+		return elem.possible.length === 0;
 	})) {
 		console.log("there's a weird board state");
-		callback(boardState);
+		check = savedCheck;
+		callback(squares);
 	} else {
 		console.log("no weird board state");
+		savedCheck = check;
 		callback(boardState);
 	}
 }
