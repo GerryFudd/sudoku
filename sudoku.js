@@ -78,6 +78,8 @@ function guesser (previousGuess) {
 			elem.possible = [elem.possible[guesses]];
 			guesses++;
 			check++;
+			console.log('it has been reset to');
+			console.log(elem);
 			first = false;
 		}
 	});
