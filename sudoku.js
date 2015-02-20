@@ -1,15 +1,13 @@
-var input = '.94...13..............76..2.8..1.....32.........2...6.....5.4.......8..7..63.4..8';
 var fn = require('./functions.js');
 var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
-var savedCheck = 0;
 var guesses = 0;
 
 console.log('=======================================================================');
 
 // Make the initial state of the board
-function populateSquares ( i ) {
+function populateSquares ( i, input, callback ) {
 
 	var square = {};
 
@@ -31,43 +29,49 @@ function populateSquares ( i ) {
 	// put the square into the array of squares
 	squares.push(square);
 	if (i < input.length - 1) {
-		populateSquares (i + 1);
+		populateSquares (i + 1, input, callback);
 	} else {
 		ib(squares);
+		console.log(squares[0]);
+		callback(squares);
 	}
   //console.log(squares);
 }
 
-populateSquares(0);
 
 // Start solving
-function solve (currentBoard) {
+function solve (currentBoard, callback) {
 
 	var prevCheck = check;
 	// call one function for each technique
 	currentBoard.map(narrowPossibilities);
 	claimer(0, currentBoard);
 	currentBoard.map(doubleCheck);
+	check = 0;
+	currentBoard.forEach( function (elem) {
+		if (elem.known) {
+			check++;
+		}
+	});
 	
 	if (check !== prevCheck && check < 81) {
 		ib(currentBoard);
 		console.log(check);
-		solve(currentBoard);
+		solve(currentBoard, callback);
 	} else if (check >= 81) {
 		ib(currentBoard);
 		console.log(check);
+		callback(currentBoard);
 	} else {
 		ib(currentBoard);
 		console.log(check);
 		findErrors(currentBoard, function (result) {
-			guesser(result);
+			guesser(result, callback);
 		});
 	}
 }
 
-solve(squares);
-
-function guesser (previousGuess) {
+function guesser (previousGuess, callback) {
 	var clone_of_guess = JSON.parse( JSON.stringify( previousGuess ) );
 	var first = true;
 	clone_of_guess.forEach( function(elem, index) {
@@ -83,20 +87,18 @@ function guesser (previousGuess) {
 			first = false;
 		}
 	});
-	solve(clone_of_guess);
+	solve(clone_of_guess, callback);
 }
 
 function findErrors (boardState, callback) {
-	console.log(boardState);
 	if (boardState.some( function (elem) {
 		return elem.possible.length === 0;
 	})) {
 		console.log("there's a weird board state");
-		check = savedCheck;
 		callback(squares);
 	} else {
 		console.log("no weird board state");
-		savedCheck = check;
+		guesses = 0;
 		callback(boardState);
 	}
 }
@@ -110,7 +112,6 @@ function narrowPossibilities (square, index, currentBoard) {
 			square.possible = limit;
 			if (square.possible.length === 1) {
 				square.known = true;
-				check++;
 			}
 			return square;
 		});
@@ -145,7 +146,6 @@ function doubleCheck (square, index, currentBoard) {
 			square.possible = limit;
 			if (square.possible.length === 1) {
 				square.known = true;
-				check++;
 			}
 			return square;
 		});
@@ -260,7 +260,6 @@ function findClaimed ( subIndex , box, boxIndex, dependency, board ) {
 			
 			if (square.possible.length === 1) {
 				square.known = true;
-				check++;
 			}
 		}
 	});
@@ -268,4 +267,9 @@ function findClaimed ( subIndex , box, boxIndex, dependency, board ) {
 	if (subIndex < Math.floor(boxIndex / 3) * 3 + 2) {
 		findClaimed( subIndex + 1, box, boxIndex, dependency, board );
 	}
+}
+
+module.exports = {
+	'populateSquares': populateSquares,
+	'solve': solve
 }
