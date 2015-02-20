@@ -103,22 +103,24 @@ for (i = 0; i < numPuzzles; i++) {
 	puzzles[i] = raw.slice(81 * i,81 * (i + 1));
 }
 
-describe("populateSquares", function () {
-	it("should make the starting state of the program", function(done) {
-		sudoku.populateSquares(0, puzzles[puzzles.length - 1], function (result) {
-			sudoku.solve(result, function (board) {
-				expect(board[0]).toEqual(result[0]);
-				done();
-			});
-		});
-
-		function testTwo () {
-			sudoku.populateSquares(0, puzzles[puzzles.length - 1], function (resultTwo) {
-				sudoku.solve(resultTwo, function (boardTwo) {
-					expect(boardTwo[78]).toEqual(resultTwo[78]);
-					done();
+describe("solve", function () {
+	it("should create an array of known squares", function(done) {
+		function test (i) {
+			console.log('test called with i:' + i);
+			sudoku.populateSquares(0, puzzles[i], function (result) {
+				sudoku.solve(result, function (board) {
+					board.forEach( function (elem) {
+						expect(elem.known).toEqual(true);
+					});
+					if (i < 9) {
+						test (i + 1)
+					} else {
+						done();
+					}
 				});
 			});
 		}
+
+		test(0);
 	});
 });
