@@ -1,0 +1,22 @@
+{
+  "name": "sudoku",
+  "version": "1.0.0",
+  "description": "Sudoku puzzle solver",
+  "main": "sudoku.js",
+  "scripts": {
+    "test": "`npm bin`/jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GerryFudd/sudoku.git"
+  },
+  "author": "David Hasenjaeger",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GerryFudd/sudoku/issues"
+  },
+  "homepage": "https://github.com/GerryFudd/sudoku",
+  "dependencies": {
+    "jasmine": "^2.2.1"
+  }
+}
