@@ -39,41 +39,48 @@ function populateSquares ( i ) {
 populateSquares(0);
 
 // Start solving
-function solve () {
+function solve (currentBoard) {
 
 	var prevCheck = check;
 	// call one function for each technique
-	squares.map(narrowPossibilities);
+	currentBoard.map(narrowPossibilities);
 	claimer(0);
-	squares.map(doubleCheck);
+	currentBoard.map(doubleCheck);
 	
 	if (check !== prevCheck) {
-		ib(squares);
-		//console.log(check);
-		solve();
+		ib(currentBoard);
+		console.log(check);
+		solve(currentBoard);
 	} else if (check === 81) {
-		ib(squares);
+		ib(currentBoard);
 	} else {
-		ib(squares);
-		//console.log(check);
+		ib(currentBoard);
+		console.log(check);
 
-    var clone_of_squares = JSON.parse( JSON.stringify( squares ) );
+    var clone_of_squares = JSON.parse( JSON.stringify( currentBoard ) );
 		guesser(clone_of_squares);
 	}
 }
 
-solve();
+solve(squares);
 
 function guesser (previousGuess) {
+	previousGuess[11].known = true;
+	check++;
+	previousGuess[11].possible = [8];
+	solve(previousGuess);
+}
+
+function findDuplicates (boardState) {
 	
 }
 
 // this function "pencils in" the possible values for each square.  It also sets a value
 // if there is only one possibility.
-function narrowPossibilities (square) {
+function narrowPossibilities (square, index, currentBoard) {
 	if (!square.known) {
 	
-		checker([square.row, square.column, square.box], function (limit) {
+		checker([square.row, square.column, square.box], currentBoard, function (limit) {
 			square.possible = limit;
 			if (square.possible.length === 1) {
 				square.known = true;
@@ -87,11 +94,11 @@ function narrowPossibilities (square) {
 	}
 }
 
-function checker (depList, callback) {
+function checker (depList, board, callback) {
 	var dependencies = ['row', 'column', 'box'];
 	var limits = [];
 	depList.forEach( function (elem, index) {
-		limits[index] = squares.reduce ( function (prev, current) {
+		limits[index] = board.reduce ( function (prev, current) {
 			if (current[dependencies[index]] === elem && current.known) {
 				return prev.concat(current.possible);
 			} else {
@@ -106,9 +113,9 @@ function checker (depList, callback) {
 
 // This function looks at the row, column, and box that each square belongs to
 // If a square is the only one that can hold a given value, assign that value to the box
-function doubleCheck (square) {
+function doubleCheck (square, index, currentBoard) {
 	if (!square.known) {
-		doubleChecker(square, function (limit) {
+		doubleChecker(square, currentBoard, function (limit) {
 			square.possible = limit;
 			if (square.possible.length === 1) {
 				square.known = true;
@@ -122,7 +129,7 @@ function doubleCheck (square) {
 }
 
 
-function doubleChecker (square, callback) {
+function doubleChecker (square, board, callback) {
 	var dependencies = ['row', 'column', 'box'];
 	var near = {};
 	
@@ -130,7 +137,7 @@ function doubleChecker (square, callback) {
 	// each key will point to an array that contains the possible values for the
 	// other squares in the given row, column, or box
 	dependencies.forEach( function (elem, index) {
-		near[elem] = squares.reduce ( function (prev, current) {
+		near[elem] = board.reduce ( function (prev, current) {
 			if (current.row !== square.row || current.column !== square.column) {
 				if (current[elem] === square[elem]) {
 					prev.push(current.possible);
