@@ -44,7 +44,7 @@ function solve (currentBoard) {
 	var prevCheck = check;
 	// call one function for each technique
 	currentBoard.map(narrowPossibilities);
-	claimer(0);
+	claimer(0, currentBoard);
 	currentBoard.map(doubleCheck);
 	
 	if (check !== prevCheck) {
@@ -52,27 +52,45 @@ function solve (currentBoard) {
 		console.log(check);
 		solve(currentBoard);
 	} else if (check === 81) {
+		console.log(check);
 		ib(currentBoard);
 	} else {
 		ib(currentBoard);
 		console.log(check);
-
-    var clone_of_squares = JSON.parse( JSON.stringify( currentBoard ) );
-		guesser(clone_of_squares);
+		findErrors(currentBoard, function (result) {
+			guesser(result);
+		});
 	}
 }
 
 solve(squares);
 
 function guesser (previousGuess) {
-	previousGuess[11].known = true;
-	check++;
-	previousGuess[11].possible = [8];
-	solve(previousGuess);
+	var clone_of_guess = JSON.parse( JSON.stringify( previousGuess ) );
+	var first = true;
+	clone_of_guess.forEach( function(elem, index) {
+		if (!elem.known && first) {
+			console.log('we hit');
+			console.log(elem);
+			elem.known = true;
+			elem.possible = [elem.possible[0]];
+			check++;
+			first = false;
+		}
+	});
+	solve(clone_of_guess);
 }
 
-function findDuplicates (boardState) {
-	
+function findErrors (boardState, callback) {
+	if (boardState.some( function (elem) {
+		return elem.possible === [];
+	})) {
+		console.log("there's a weird board state");
+		callback(boardState);
+	} else {
+		console.log("no weird board state");
+		callback(boardState);
+	}
 }
 
 // this function "pencils in" the possible values for each square.  It also sets a value
@@ -188,10 +206,10 @@ function doubleChecker (square, board, callback) {
 	crossHatch( 0 );
 }
 
-function claimer (index) {
+function claimer (index, board) {
 	var box = [];
 	// Make an array containing the squares in the given box.
-	squares.forEach( function (elem) {
+	board.forEach( function (elem) {
 		if (elem.box === index) {
 			box.push(elem);
 		}
@@ -202,17 +220,17 @@ function claimer (index) {
 	var boxColumn = (index % 3) * 3;
 
 	
-	findClaimed(boxRow, box, index, 'row');
-	findClaimed(boxColumn, box, index, 'column');
+	findClaimed(boxRow, box, index, 'row', board);
+	findClaimed(boxColumn, box, index, 'column', board);
 	
 	if (index < 8) {
-		claimer(index + 1);
+		claimer(index + 1, board);
 	}
 }
 	
 // Make an array where each element is the list of possible values for a square
 // in one of the two rows other than i
-function findClaimed ( subIndex , box, boxIndex, dependency ) {
+function findClaimed ( subIndex , box, boxIndex, dependency, board ) {
 	var union = box.reduce( function ( prev, current ) {
 		if (current[dependency] !== subIndex) {
 			return fn.union(prev, current.possible);
@@ -221,7 +239,7 @@ function findClaimed ( subIndex , box, boxIndex, dependency ) {
 		}
 	}, []);
 	var claimed = fn.difference([1, 2, 3, 4, 5, 6, 7, 8, 9], union);
-	squares.forEach( function (square) {
+	board.forEach( function (square) {
 		if ( square.box !== boxIndex && square[dependency] === subIndex && !square.known) {
 			var oldPossible = [].concat(square.possible);
 			square.possible = fn.difference(square.possible, claimed);
@@ -240,6 +258,6 @@ function findClaimed ( subIndex , box, boxIndex, dependency ) {
 	});
 	
 	if (subIndex < Math.floor(boxIndex / 3) * 3 + 2) {
-		findClaimed( subIndex + 1, box, boxIndex, dependency );
+		findClaimed( subIndex + 1, box, boxIndex, dependency, board );
 	}
 }
