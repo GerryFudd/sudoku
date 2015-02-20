@@ -2,7 +2,8 @@ var fn = require('./functions.js');
 var ib = require('./imageBuilder.js');
 var squares = [];
 var check = 0;
-var guesses = 0;
+var currentGuess = 0;
+var guesses = {};
 
 console.log('=======================================================================');
 
@@ -32,6 +33,7 @@ function populateSquares ( i, input, callback ) {
 		populateSquares (i + 1, input, callback);
 	} else {
 		ib(squares);
+		console.log(check);
 		console.log(squares[0]);
 		callback(squares);
 	}
@@ -76,14 +78,25 @@ function guesser (previousGuess, callback) {
 	var first = true;
 	clone_of_guess.forEach( function(elem, index) {
 		if (!elem.known && first) {
+
 			console.log('we hit');
 			console.log(elem);
+
 			elem.known = true;
-			elem.possible = [elem.possible[guesses]];
-			guesses++;
-			check++;
+			if (guesses[index] >= 0) {
+				console.log('guessing differently for index ' + index)
+				guesses[index] = (guesses[index] + 1) % elem.possible.length;
+			} else {
+				console.log('first guess on index ' + index)
+				guesses[index] = 0;
+			}
+			console.log(guesses);
+			currentGuess = guesses[index];
+			elem.possible = [elem.possible[currentGuess]];
+
 			console.log('it has been reset to');
 			console.log(elem);
+
 			first = false;
 		}
 	});
@@ -98,7 +111,6 @@ function findErrors (boardState, callback) {
 		callback(squares);
 	} else {
 		console.log("no weird board state");
-		guesses = 0;
 		callback(boardState);
 	}
 }

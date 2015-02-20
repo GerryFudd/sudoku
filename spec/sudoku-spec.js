@@ -106,11 +106,19 @@ for (i = 0; i < numPuzzles; i++) {
 describe("populateSquares", function () {
 	it("should make the starting state of the program", function(done) {
 		sudoku.populateSquares(0, puzzles[puzzles.length - 1], function (result) {
-			expect(result[78]).toEqual({known:true, possible: [8], row: 8, column: 6, box: 8});
 			sudoku.solve(result, function (board) {
-				expect(board[78]).toEqual(result[78]);
+				expect(board[0]).toEqual(result[0]);
 				done();
 			});
 		});
+
+		function testTwo () {
+			sudoku.populateSquares(0, puzzles[puzzles.length - 1], function (resultTwo) {
+				sudoku.solve(resultTwo, function (boardTwo) {
+					expect(boardTwo[78]).toEqual(resultTwo[78]);
+					done();
+				});
+			});
+		}
 	});
 });
