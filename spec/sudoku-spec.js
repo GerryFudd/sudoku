@@ -100,7 +100,7 @@ var numPuzzles = raw.length / 81;
 var i;
 var puzzles = [];
 for (i = 0; i < numPuzzles; i++) {
-	puzzles[i] = raw.slice(81 * i,81 * (i + 1));
+	puzzles[i] = raw.slice(81 * i, 81 * (i + 1));
 }
 
 describe("solve", function () {
