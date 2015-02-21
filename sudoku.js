@@ -1,8 +1,10 @@
 var ib = require('./imageBuilder.js');
 var hf = require('./helperFunctions.js')
 var squares = [];
+var boardStates = [];
 var currentGuess = 0;
 var guesses = {};
+var timesStuck = 0;
 
 console.log('=======================================================================');
 
@@ -75,9 +77,18 @@ function solve (currentBoard, callback) {
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
+	} else if (timesStuck >= 20) {
+		ib(currentBoard);
+		console.log(check);
+		console.log('too many guesses');
 	} else {
 		// ib(currentBoard);
 		// console.log(check);
+		console.log('---------------------------------------------------------------------');
+		timesStuck++;
+		console.log('times stuck: ' + timesStuck);
+		console.log('stuck on:');
+		ib(currentBoard);
 		findErrors(currentBoard, function (result) {
 			guesser(result, callback);
 		});
@@ -87,41 +98,62 @@ function solve (currentBoard, callback) {
 function guesser (previousGuess, callback) {
 	var clone_of_guess = JSON.parse( JSON.stringify( previousGuess ) );
 	var first = true;
-	clone_of_guess.forEach( function(elem, index) {
+	clone_of_guess.forEach( function(elem, index, array) {
 		if (!elem.known && first) {
 
-			// console.log('we hit');
-			// console.log(elem);
-
 			elem.known = true;
-			if (guesses[index] >= 0) {
-				// console.log('guessing differently for index ' + index)
-				guesses[index] = (guesses[index] + 1) % elem.possible.length;
+			// if this index is already a key and it is the last key,
+			console.log('highest index is:  ' + Number(Object.keys(guesses)[Object.keys(guesses).length - 1]));
+			console.log('index is: ' + index);
+			console.log('last guess:');
+			console.log(guesses);
+			if (guesses[index] >= 0 && Number(Object.keys(guesses)[Object.keys(guesses).length - 1]) === index) {
+				// Change the way that we will guess next time
+				console.log('smart guss ran')
+				smartChange(guesses, elem, index, function (result) {
+					guesses = result;
+				});
+			} else if ( guesses[index] >= 0 ) {
+				// if the key exists and isn't the last, do nothing
 			} else {
-				// console.log('first guess on index ' + index)
+				// otherwise, create the key and set it to 0
 				guesses[index] = 0;
 			}
-			// console.log(guesses);
+			console.log('new guess:');
+			console.log(guesses);
 			currentGuess = guesses[index];
 			elem.possible = [elem.possible[currentGuess]];
-
-			// console.log('it has been reset to');
-			// console.log(elem);
+			console.log('after guessing:');
+			ib(array);
 
 			first = false;
+
 		}
 	});
 	solve(clone_of_guess, callback);
+}
+
+function smartChange (obj, square, key, callback) {
+	// move to the next possible guess for the last cell
+	// if all of the options have been exhausted, increment the previous key value
+	obj[key] = (obj[key] + 1) % square.possible.length;
+	if ( obj[key] !== 0 ) {
+		callback( obj );
+	} else {
+		var newKey = Object.keys(obj)[Object.keys(obj).indexOf(key.toString()) - 1];
+		smartChange (obj, square, newKey, callback);
+	}
 }
 
 function findErrors (boardState, callback) {
 	if (boardState.some( function (elem) {
 		return elem.possible.length === 0;
 	})) {
-		// console.log("there's a weird board state");
-		callback(squares);
+		console.log("starting over");
+		callback(boardStates.pop());
 	} else {
 		// console.log("no weird board state");
+		boardStates.push(boardState);
 		callback(boardState);
 	}
 }
