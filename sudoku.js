@@ -74,10 +74,11 @@ function solve (currentBoard, callback) {
 		// console.log(check);
 		solve(currentBoard, callback);
 	} else if (check >= 81) {
+		timesStuck = 0;
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
-	} else if (timesStuck >= 20) {
+	} else if (timesStuck >= 100) {
 		ib(currentBoard);
 		console.log(check);
 		console.log('too many guesses');
