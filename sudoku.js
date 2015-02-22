@@ -78,7 +78,7 @@ function solve (currentBoard, callback) {
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
-	} else if (timesStuck >= 2) {
+	} else if (timesStuck >= 3) {
 		ib(currentBoard);
 		console.log(check);
 		console.log('too many guesses');
