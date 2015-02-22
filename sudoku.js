@@ -128,16 +128,23 @@ function modifyGuesses (state, callback) {
 			num = index;
 		}
 	});
-
-	if (guesses[num] >= 0) {
-		guesses[num] += 1;
-	} else {
+	if (!guesses[num] < state[num].length - 1) {
 		guesses[num] = 0;
-	}
+		state = boardStates.pop();
+		console.log('out of choices for this square, reverting to');
+		ib(state);
+		console.log('done for now');
+	} else {
+		if (guesses[num] >= 0) {
+			guesses[num] += 1;
+		} else {
+			guesses[num] = 0;
+		}
 
-	console.log('guesses is now');
-	console.log(guesses);
-	callback(num);
+		console.log('guesses is now');
+		console.log(guesses);
+		callback(num);
+	}
 }
 
 function applyGuess (state, ind, callback) {
