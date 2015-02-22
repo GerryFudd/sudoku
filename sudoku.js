@@ -95,28 +95,37 @@ function solve (currentBoard, callback) {
 }
 
 function guesser (previousGuess, callback) {
-	checkIfPossible(previousGuess, modifyGuesses);
+	checkIfPossible(previousGuess, function (possible) {
+		modifyGuesses(possible, function(board, number) {
+			if (number === 99) {
+				board = boardStates.pop();
+				console.log('out of choices for this square, reverting to');
+				ib(board);
+				solve(board, callback);
+			} else {
+				applyGuess(board, number, function (newBoard) {
+					solve(newBoard, callback);
+				});
+			}
+		})
+	});
 }
 
-function checkIfPossible (possibleState, callback) {
-	if ( possibleState.some( function (elem) {
+function checkIfPossible (currentState, cb) {
+	if ( currentState.some( function (elem) {
 		return elem.possible.length === 0;
 	}) ) {
-		console.log('bad board state');
+		console.log('impossible board state');
 		possibleState = boardStates.pop();
 		console.log('reverted to');
 		ib(possibleState);
-		callback(possibleState, function (ind) {
-			applyGuess(possibleState, ind, callback);
-		});
+		cb(possibleState);
 	} else {
-		callback(possibleState, function (ind) {
-			applyGuess(possibleState, ind, callback);
-		});
+		cb(currentState);
 	}
 }
 
-function modifyGuesses (state, callback) {
+function modifyGuesses (state, cb) {
 	var first = true;
 	var num;
 	console.log('guesses was');
@@ -130,10 +139,7 @@ function modifyGuesses (state, callback) {
 	});
 	if (!guesses[num] < state[num].length - 1) {
 		guesses[num] = 0;
-		state = boardStates.pop();
-		console.log('out of choices for this square, reverting to');
-		ib(state);
-		console.log('done for now');
+		cb(state, 99);
 	} else {
 		if (guesses[num] >= 0) {
 			guesses[num] += 1;
@@ -143,11 +149,11 @@ function modifyGuesses (state, callback) {
 
 		console.log('guesses is now');
 		console.log(guesses);
-		callback(num);
+		cb(state, num);
 	}
 }
 
-function applyGuess (state, ind, callback) {
+function applyGuess (state, ind, cb) {
 	boardStates.push(state);
 	console.log('board states stored: ' + boardStates.length)
 	var clone = JSON.parse(JSON.stringify(state));
@@ -155,7 +161,7 @@ function applyGuess (state, ind, callback) {
 	clone[ind].possible = [state[ind].possible[guesses[ind]]];
 	console.log('state is now');
 	ib(clone);
-	solve(clone, callback)
+	cb(clone);
 }
 
 module.exports = {
