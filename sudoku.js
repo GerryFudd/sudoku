@@ -90,17 +90,30 @@ function solve (currentBoard, callback) {
 		console.log('times stuck: ' + timesStuck);
 		console.log('stuck on:');
 		ib(currentBoard);
-		findErrors(currentBoard, function (result) {
-			guesser(result, callback);
-		});
+		guesser(currentBoard, callback);
 	}
 }
 
 function guesser (previousGuess, callback) {
-	modifyGuesses(previousGuess, function (ind) {
-		applyGuess(previousGuess, ind, callback);
-	});
-	
+	checkIfPossible(previousGuess, modifyGuesses);
+}
+
+function checkIfPossible (possibleState, callback) {
+	if ( possibleState.some( function (elem) {
+		return elem.possible.length === 0;
+	}) ) {
+		console.log('bad board state');
+		possibleState = boardStates.pop();
+		console.log('reverted to');
+		ib(possibleState);
+		callback(possibleState, function (ind) {
+			applyGuess(possibleState, ind, callback);
+		});
+	} else {
+		callback(possibleState, function (ind) {
+			applyGuess(possibleState, ind, callback);
+		});
+	}
 }
 
 function modifyGuesses (state, callback) {
@@ -112,34 +125,30 @@ function modifyGuesses (state, callback) {
 		if (!elem.known && first) {
 			console.log('looks like ' + index + ' is the first unkown index')
 			first = false;
-			guesses[index] = 0;
 			num = index;
 		}
 	});
+
+	if (guesses[num] >= 0) {
+		guesses[num] += 1;
+	} else {
+		guesses[num] = 0;
+	}
+
 	console.log('guesses is now');
 	console.log(guesses);
 	callback(num);
 }
 
 function applyGuess (state, ind, callback) {
-	state[ind].known = true;
-	state[ind].possible = [state[ind].possible[guesses[ind]]];
+	boardStates.push(state);
+	console.log('board states stored: ' + boardStates.length)
+	var clone = JSON.parse(JSON.stringify(state));
+	clone[ind].known = true;
+	clone[ind].possible = [state[ind].possible[guesses[ind]]];
 	console.log('state is now');
-	ib(state);
-	solve(state, callback)
-}
-
-function findErrors (boardState, callback) {
-	if (boardState.some( function (elem) {
-		return elem.possible.length === 0;
-	})) {
-		console.log("starting over");
-		callback(boardStates.pop());
-	} else {
-		// console.log("no weird board state");
-		boardStates.push(boardState);
-		callback(boardState);
-	}
+	ib(clone);
+	solve(clone, callback)
 }
 
 module.exports = {
