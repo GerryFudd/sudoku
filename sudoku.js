@@ -78,7 +78,7 @@ function solve (currentBoard, callback) {
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
-	} else if (timesStuck >= 100) {
+	} else if (timesStuck >= 2) {
 		ib(currentBoard);
 		console.log(check);
 		console.log('too many guesses');
@@ -97,53 +97,35 @@ function solve (currentBoard, callback) {
 }
 
 function guesser (previousGuess, callback) {
-	var clone_of_guess = JSON.parse( JSON.stringify( previousGuess ) );
-	var first = true;
-	clone_of_guess.forEach( function(elem, index, array) {
-		if (!elem.known && first) {
-
-			elem.known = true;
-			// if this index is already a key and it is the last key,
-			console.log('highest index is:  ' + Number(Object.keys(guesses)[Object.keys(guesses).length - 1]));
-			console.log('index is: ' + index);
-			console.log('last guess:');
-			console.log(guesses);
-			if (guesses[index] >= 0 && Number(Object.keys(guesses)[Object.keys(guesses).length - 1]) === index) {
-				// Change the way that we will guess next time
-				console.log('smart guss ran')
-				smartChange(guesses, elem, index, function (result) {
-					guesses = result;
-				});
-			} else if ( guesses[index] >= 0 ) {
-				// if the key exists and isn't the last, do nothing
-			} else {
-				// otherwise, create the key and set it to 0
-				guesses[index] = 0;
-			}
-			console.log('new guess:');
-			console.log(guesses);
-			currentGuess = guesses[index];
-			elem.possible = [elem.possible[currentGuess]];
-			console.log('after guessing:');
-			ib(array);
-
-			first = false;
-
-		}
+	modifyGuesses(previousGuess, function (ind) {
+		applyGuess(previousGuess, ind);
 	});
-	solve(clone_of_guess, callback);
+	
 }
 
-function smartChange (obj, square, key, callback) {
-	// move to the next possible guess for the last cell
-	// if all of the options have been exhausted, increment the previous key value
-	obj[key] = (obj[key] + 1) % square.possible.length;
-	if ( obj[key] !== 0 ) {
-		callback( obj );
-	} else {
-		var newKey = Object.keys(obj)[Object.keys(obj).indexOf(key.toString()) - 1];
-		smartChange (obj, square, newKey, callback);
-	}
+function modifyGuesses (state, callback) {
+	var first = true;
+	var num;
+	console.log('guesses was');
+	console.log(guesses)
+	state.forEach( function (elem, index) {
+		if (!elem.known && first) {
+			console.log('looks like ' + index + ' is the first unkown index')
+			first = false;
+			guesses[index] = 0;
+			num = index;
+		}
+	});
+	console.log('guesses is now');
+	console.log(guesses);
+	callback(num);
+}
+
+function applyGuess (state, ind) {
+	state[ind].known = true;
+	state[ind].possible = [state[ind].possible[guesses[ind]]];
+	console.log('state is now');
+	ib(state);
 }
 
 function findErrors (boardState, callback) {
