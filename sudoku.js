@@ -98,7 +98,7 @@ function solve (currentBoard, callback) {
 
 function guesser (previousGuess, callback) {
 	modifyGuesses(previousGuess, function (ind) {
-		applyGuess(previousGuess, ind);
+		applyGuess(previousGuess, ind, callback);
 	});
 	
 }
@@ -121,11 +121,12 @@ function modifyGuesses (state, callback) {
 	callback(num);
 }
 
-function applyGuess (state, ind) {
+function applyGuess (state, ind, callback) {
 	state[ind].known = true;
 	state[ind].possible = [state[ind].possible[guesses[ind]]];
 	console.log('state is now');
 	ib(state);
+	solve(state, callback)
 }
 
 function findErrors (boardState, callback) {
