@@ -2,7 +2,6 @@ var ib = require('./imageBuilder.js');
 var hf = require('./helperFunctions.js')
 var squares = [];
 var boardStates = [];
-var currentGuess = 0;
 var guesses = {};
 var timesStuck = 0;
 
@@ -41,6 +40,7 @@ function populateSquares ( i, input, callback ) {
 
 		ib(squares);
 		console.log(check);
+		boardStates = [];
 		callback(squares);
 	}
   //console.log(squares);
@@ -51,6 +51,8 @@ function populateSquares ( i, input, callback ) {
 function solve (currentBoard, callback) {
 
 	var prevCheck = 0;
+	console.log(boardStates.length);
+	console.log(timesStuck);
 	currentBoard.forEach( function (elem) {
 		if (elem.known) {
 			prevCheck++;
@@ -85,11 +87,11 @@ function solve (currentBoard, callback) {
 	} else {
 		// ib(currentBoard);
 		// console.log(check);
-		console.log('---------------------------------------------------------------------');
+		// console.log('---------------------------------------------------------------------');
 		timesStuck++;
-		console.log('times stuck: ' + timesStuck);
-		console.log('stuck on:');
-		ib(currentBoard);
+		// console.log('times stuck: ' + timesStuck);
+		// console.log('stuck on:');
+		// ib(currentBoard);
 		guesser(currentBoard, callback);
 	}
 }
@@ -99,8 +101,8 @@ function guesser (previousGuess, callback) {
 		modifyGuesses(possible, function(board, number) {
 			if (number === 99) {
 				board = boardStates.pop();
-				console.log('out of choices for this square, reverting to');
-				ib(board);
+				// console.log('out of choices for this square, reverting to');
+				// ib(board);
 				solve(board, callback);
 			} else {
 				applyGuess(board, number, function (newBoard) {
@@ -115,10 +117,11 @@ function checkIfPossible (currentState, cb) {
 	if ( currentState.some( function (elem) {
 		return elem.possible.length === 0;
 	}) ) {
-		console.log('impossible board state');
+		// console.log('impossible board state');
+		// console.log('states stored: ' + boardStates.length);
 		possibleState = boardStates.pop();
-		console.log('reverted to');
-		ib(possibleState);
+		// console.log('reverted to');
+		// ib(possibleState);
 		cb(possibleState);
 	} else {
 		cb(currentState);
@@ -128,11 +131,11 @@ function checkIfPossible (currentState, cb) {
 function modifyGuesses (state, cb) {
 	var first = true;
 	var num;
-	console.log('guesses was');
-	console.log(guesses)
+	// console.log('guesses was');
+	// console.log(guesses)
 	state.forEach( function (elem, index) {
 		if (!elem.known && first) {
-			console.log('looks like ' + index + ' is the first unkown index')
+			// console.log('looks like ' + index + ' is the first unkown index')
 			first = false;
 			num = index;
 		}
@@ -144,28 +147,28 @@ function modifyGuesses (state, cb) {
 		guesses[num] = 0;
 	}
 
-	console.log('guesses[num] is ' + guesses[num] + ' and state[num].possible.length is ' + state[num].possible.length);
+	// console.log('guesses[num] is ' + guesses[num] + ' and state[num].possible.length is ' + state[num].possible.length);
 
 	if (guesses[num] === state[num].possible.length) {
-		console.log('index ' + num + ' reset to 0');
+		// console.log('index ' + num + ' reset to 0');
 		guesses[num] = 0;
 		cb(state, 99);
 	} else {
 
-		console.log('guesses is now');
-		console.log(guesses);
+		// console.log('guesses is now');
+		// console.log(guesses);
 		cb(state, num);
 	}
 }
 
 function applyGuess (state, ind, cb) {
 	boardStates.push(state);
-	console.log('board states stored: ' + boardStates.length)
+	// console.log('board states stored: ' + boardStates.length)
 	var clone = JSON.parse(JSON.stringify(state));
 	clone[ind].known = true;
 	clone[ind].possible = [state[ind].possible[guesses[ind]]];
-	console.log('state is now');
-	ib(clone);
+	// console.log('state is now');
+	// ib(clone);
 	cb(clone);
 }
 

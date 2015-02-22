@@ -112,7 +112,7 @@ describe("solve", function () {
 					board.forEach( function (elem) {
 						expect(elem.known).toEqual(true);
 					});
-					if (i < 9) {
+					if (i < 11) {
 						test (i + 1)
 					} else {
 						done();
