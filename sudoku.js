@@ -40,10 +40,10 @@ function populateSquares ( i, input, callback ) {
 
 		ib(squares);
 		console.log(check);
-		boardStates = [];
+		boardStates = [squares];
+		guesses = {};
 		callback(squares);
 	}
-  //console.log(squares);
 }
 
 
@@ -51,8 +51,6 @@ function populateSquares ( i, input, callback ) {
 function solve (currentBoard, callback) {
 
 	var prevCheck = 0;
-	console.log(boardStates.length);
-	console.log(timesStuck);
 	currentBoard.forEach( function (elem) {
 		if (elem.known) {
 			prevCheck++;
@@ -72,44 +70,45 @@ function solve (currentBoard, callback) {
 	});
 	
 	if (check !== prevCheck && check < 81) {
-		// ib(currentBoard);
-		// console.log(check);
 		solve(currentBoard, callback);
 	} else if (check >= 81) {
 		timesStuck = 0;
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
-	} else if (timesStuck >= 100) {
+	} else if (timesStuck >= 300) {
 		ib(currentBoard);
 		console.log(check);
 		console.log('too many guesses');
 	} else {
-		// ib(currentBoard);
-		// console.log(check);
-		// console.log('---------------------------------------------------------------------');
 		timesStuck++;
-		// console.log('times stuck: ' + timesStuck);
-		// console.log('stuck on:');
-		// ib(currentBoard);
 		guesser(currentBoard, callback);
 	}
 }
 
 function guesser (previousGuess, callback) {
+	var revert;
 	checkIfPossible(previousGuess, function (possible) {
-		modifyGuesses(possible, function(board, number) {
-			if (number === 99) {
-				board = boardStates.pop();
-				// console.log('out of choices for this square, reverting to');
-				// ib(board);
-				solve(board, callback);
-			} else {
-				applyGuess(board, number, function (newBoard) {
-					solve(newBoard, callback);
-				});
-			}
-		})
+		if (possible) {
+			modifyGuesses(previousGuess, function(number) {
+				if (number === 99) {
+					if (boardStates.length > 0) {
+						revert = boardStates.pop();
+						solve(revert, callback);
+					} else {
+						ib(previousGuess);
+						console.log(guesses);
+					}
+				} else {
+					applyGuess(previousGuess, number, function (newBoard) {
+						solve(newBoard, callback);
+					});
+				}
+			});
+		} else {
+			revert = boardStates.pop();
+			solve(revert, callback);
+		}
 	});
 }
 
@@ -117,25 +116,17 @@ function checkIfPossible (currentState, cb) {
 	if ( currentState.some( function (elem) {
 		return elem.possible.length === 0;
 	}) ) {
-		// console.log('impossible board state');
-		// console.log('states stored: ' + boardStates.length);
-		possibleState = boardStates.pop();
-		// console.log('reverted to');
-		// ib(possibleState);
-		cb(possibleState);
+		cb(false);
 	} else {
-		cb(currentState);
+		cb(true);
 	}
 }
 
-function modifyGuesses (state, cb) {
+function modifyGuesses (board, cb) {
 	var first = true;
 	var num;
-	// console.log('guesses was');
-	// console.log(guesses)
-	state.forEach( function (elem, index) {
+	board.forEach( function (elem, index) {
 		if (!elem.known && first) {
-			// console.log('looks like ' + index + ' is the first unkown index')
 			first = false;
 			num = index;
 		}
@@ -147,27 +138,22 @@ function modifyGuesses (state, cb) {
 		guesses[num] = 0;
 	}
 
-	// console.log('guesses[num] is ' + guesses[num] + ' and state[num].possible.length is ' + state[num].possible.length);
 
-	if (guesses[num] === state[num].possible.length) {
-		// console.log('index ' + num + ' reset to 0');
-		guesses[num] = 0;
-		cb(state, 99);
+	if (guesses[num] === board[num].possible.length) {
+		guesses[num] = -1;
+		cb(99);
 	} else {
 
-		// console.log('guesses is now');
-		// console.log(guesses);
-		cb(state, num);
+		cb(num);
 	}
 }
 
 function applyGuess (state, ind, cb) {
 	boardStates.push(state);
-	// console.log('board states stored: ' + boardStates.length)
 	var clone = JSON.parse(JSON.stringify(state));
 	clone[ind].known = true;
 	clone[ind].possible = [state[ind].possible[guesses[ind]]];
-	// console.log('state is now');
+	// console.log(guesses);
 	// ib(clone);
 	cb(clone);
 }

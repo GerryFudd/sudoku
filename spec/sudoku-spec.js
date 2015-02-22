@@ -1,4 +1,5 @@
 var sudoku = require('../sudoku.js');
+var fn = require('../functions.js');
 
 var raw = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......\
 52...6.........7.13...........4..8..6......5...........418.........3..2...87.....\
@@ -109,10 +110,14 @@ describe("solve", function () {
 			console.log('test called with i:' + i);
 			sudoku.populateSquares(0, puzzles[i], function (result) {
 				sudoku.solve(result, function (board) {
-					board.forEach( function (elem) {
+					board.forEach( function (elem, index) {
 						expect(elem.known).toEqual(true);
+						if (result[index].known) {
+							expect(elem.possible).toEqual(result[index].possible);
+						}
+						
 					});
-					if (i < 11) {
+					if (i < 45) {
 						test (i + 1)
 					} else {
 						done();
