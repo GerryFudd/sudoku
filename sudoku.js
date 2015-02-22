@@ -78,7 +78,7 @@ function solve (currentBoard, callback) {
 		ib(currentBoard);
 		console.log(check);
 		callback(currentBoard);
-	} else if (timesStuck >= 3) {
+	} else if (timesStuck >= 14) {
 		ib(currentBoard);
 		console.log(check);
 		console.log('too many guesses');
@@ -137,15 +137,20 @@ function modifyGuesses (state, cb) {
 			num = index;
 		}
 	});
-	if (!guesses[num] < state[num].length - 1) {
+
+	if (guesses[num] >= 0) {
+		guesses[num] += 1;
+	} else {
+		guesses[num] = 0;
+	}
+
+	console.log('guesses[num] is ' + guesses[num] + ' and state[num].possible.length is ' + state[num].possible.length);
+
+	if (guesses[num] === state[num].possible.length) {
+		console.log('index ' + num + ' reset to 0');
 		guesses[num] = 0;
 		cb(state, 99);
 	} else {
-		if (guesses[num] >= 0) {
-			guesses[num] += 1;
-		} else {
-			guesses[num] = 0;
-		}
 
 		console.log('guesses is now');
 		console.log(guesses);
